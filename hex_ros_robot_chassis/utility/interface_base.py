@@ -102,10 +102,6 @@ class ChassisInterfaceBase(ABC):
     def pub_tf(self, out: HexDcRoboChsStateStamped):
         raise NotImplementedError("ChassisInterfaceBase.pub_tf")
 
-    @abstractmethod
-    def pub_clock(self, stamp_ns: int):
-        raise NotImplementedError("ChassisInterfaceBase.pub_clock")
-
     ####################
     ### subscribers
     ####################

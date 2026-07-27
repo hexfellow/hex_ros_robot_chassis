@@ -13,7 +13,6 @@ import rospy
 from hex_util_runtime import ns_now
 
 from sensor_msgs.msg import JointState
-from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import Twist, TransformStamped, Vector3
 from nav_msgs.msg import Odometry
 from tf2_msgs.msg import TFMessage
@@ -63,7 +62,7 @@ class DataInterface(ChassisInterfaceBase):
             "port": rospy.get_param('~robot_port', 8439),
             "frame_id": rospy.get_param('~robot_frame_id', "base_link"),
             "state_buffer_size": rospy.get_param('~state_buffer_size', 200),
-            "sens_ts": rospy.get_param('~sens_ts', False),
+            "sens_ts": rospy.get_param('~sens_ts', True),
             "enable_kcp": rospy.get_param('~enable_kcp', True),
         }
 
@@ -92,12 +91,6 @@ class DataInterface(ChassisInterfaceBase):
         self.__tf_pub = rospy.Publisher(
             '/tf',
             TFMessage,
-            queue_size=10,
-        )
-        ### publisher — /clock
-        self.__clock_pub = rospy.Publisher(
-            '/clock',
-            Clock,
             queue_size=10,
         )
 
@@ -248,14 +241,6 @@ class DataInterface(ChassisInterfaceBase):
         transform.transform.rotation.w = out.chs_state.odom.pose.orientation.w
         tf_msg.transforms.append(transform)
         self.__tf_pub.publish(tf_msg)
-
-    def pub_clock(self, stamp_ns: int):
-        msg = Clock()
-        msg.clock = rospy.Time(
-            int(stamp_ns // 1_000_000_000),
-            int(stamp_ns % 1_000_000_000),
-        )
-        self.__clock_pub.publish(msg)
 
     ####################
     ### subscribers

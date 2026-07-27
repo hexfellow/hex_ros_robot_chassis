@@ -16,7 +16,6 @@ import rclpy.node
 
 from builtin_interfaces.msg import Time
 from sensor_msgs.msg import JointState
-from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import Twist, TransformStamped, Vector3
 from nav_msgs.msg import Odometry
 from tf2_msgs.msg import TFMessage
@@ -75,7 +74,7 @@ class DataInterface(ChassisInterfaceBase):
         self.__node.declare_parameter('robot_port', 8439)
         self.__node.declare_parameter('robot_frame_id', "base_link")
         self.__node.declare_parameter('state_buffer_size', 200)
-        self.__node.declare_parameter('sens_ts', False)
+        self.__node.declare_parameter('sens_ts', True)
         self.__node.declare_parameter('enable_kcp', True)
         self.__node.declare_parameter('use_ros_time', False)
         self._robot_param = {
@@ -112,12 +111,6 @@ class DataInterface(ChassisInterfaceBase):
         self.__tf_pub = self.__node.create_publisher(
             TFMessage,
             '/tf',
-            10,
-        )
-        ### publisher — /clock (for sim_time compatibility)
-        self.__clock_pub = self.__node.create_publisher(
-            Clock,
-            '/clock',
             10,
         )
 
@@ -286,14 +279,6 @@ class DataInterface(ChassisInterfaceBase):
         transform.transform.rotation.w = out.chs_state.odom.pose.orientation.w
         tf_msg.transforms.append(transform)
         self.__tf_pub.publish(tf_msg)
-
-    def pub_clock(self, stamp_ns: int):
-        msg = Clock()
-        msg.clock = Time(
-            sec=int(stamp_ns // 1_000_000_000),
-            nanosec=int(stamp_ns % 1_000_000_000),
-        )
-        self.__clock_pub.publish(msg)
 
     ####################
     ### subscribers
