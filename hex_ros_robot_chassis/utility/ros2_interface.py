@@ -48,13 +48,15 @@ from hex_util_msg.dataclass.dataclass_robo import (
 from .interface_base import ChassisInterfaceBase
 from .interface_base import JOINT_STATE_NAME
 
+from rclpy.logging import LoggingSeverity
 
 class DataInterface(ChassisInterfaceBase):
 
     def __init__(self, name: str = "unknown"):
         rclpy.init()
         self.__node = rclpy.node.Node(name)
-        self._logger = self.__node.get_logger()
+        self.__logger = self.__node.get_logger()
+        # self.__logger.set_level(LoggingSeverity.DEBUG)
         self._shutting_down = False
         self.__spin_thread = threading.Thread(target=self.__spin)
         self.__spin_thread.start()
@@ -161,19 +163,19 @@ class DataInterface(ChassisInterfaceBase):
     ### logging
     ####################
     def logd(self, msg, *args, **kwargs):
-        self._logger.debug(msg, *args, **kwargs)
+        self.__logger.debug(msg, *args, **kwargs)
 
     def logi(self, msg, *args, **kwargs):
-        self._logger.info(msg, *args, **kwargs)
+        self.__logger.info(msg, *args, **kwargs)
 
     def logw(self, msg, *args, **kwargs):
-        self._logger.warning(msg, *args, **kwargs)
+        self.__logger.warning(msg, *args, **kwargs)
 
     def loge(self, msg, *args, **kwargs):
-        self._logger.error(msg, *args, **kwargs)
+        self.__logger.error(msg, *args, **kwargs)
 
     def logf(self, msg, *args, **kwargs):
-        self._logger.fatal(msg, *args, **kwargs)
+        self.__logger.fatal(msg, *args, **kwargs)
 
     ####################
     ### time source

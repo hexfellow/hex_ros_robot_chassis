@@ -62,9 +62,7 @@ class RobotTriggerA3Lr1:
             ctrl_rate=rate_param["ros"],
             state_buffer_size=robot_param["state_buffer_size"],
             sens_ts=robot_param["sens_ts"],
-            motor_count=robot_param["motor_count"],
             enable_kcp=robot_param["enable_kcp"],
-            log_level=robot_param["log_level"],
         ))
         self.__robot.start()
 
@@ -92,12 +90,8 @@ class RobotTriggerA3Lr1:
 
         elif mode == HexDcRoboChsCtrlMode.MIT:
             # MIT mode: vel → per-motor speed, jnt.eff → max_current
-            vel = chs_ctrl.vel
-            speeds = np.array([
-                vel.linear.x,
-                vel.linear.y,
-                vel.linear.z,
-            ])
+            speeds = chs_ctrl.jnt.eff
+            
             eff = chs_ctrl.jnt.eff
             max_currents = np.asarray(eff[:3]) if len(eff) >= 3 else np.full(3, 1.0)
             self.__robot.set_chs_per_motor_spd_cmd({
@@ -118,8 +112,8 @@ class RobotTriggerA3Lr1:
         ts_ns = hex_ts_to_ns(motor_status["ts"]) if self.__sens_ts else ns_now()
 
         # vehicle_position: (x, y, yaw), vehicle_speed: (vx, vy, omega)
-        pos_raw = self.__robot.get_vehicle_position(latest=True)
-        spd_raw = self.__robot.get_vehicle_speed(latest=True)
+        pos_raw = self.__robot.get_vehicle_position()
+        spd_raw = self.__robot.get_vehicle_speed()
 
         if pos_raw is not None:
             odom_pose = HexDcBasePose(
@@ -135,6 +129,7 @@ class RobotTriggerA3Lr1:
                 position=HexDcBaseVector3(x=0.0, y=0.0, z=0.0),
                 orientation=HexDcBaseQuaternion(x=0.0, y=0.0, z=0.0, w=1.0),
             )
+            self.__data_interface.logw("Vehicle position is None, using default pose.")
 
         if spd_raw is not None:
             odom_twist = HexDcBaseTwist(
@@ -146,6 +141,7 @@ class RobotTriggerA3Lr1:
                 linear=HexDcBaseVector3(x=0.0, y=0.0, z=0.0),
                 angular=HexDcBaseVector3(x=0.0, y=0.0, z=0.0),
             )
+            self.__data_interface.logw("Vehicle speed is None, using default twist.")
 
         return HexDcRoboChsStateStamped(
             header=HexDcBaseHeader(
