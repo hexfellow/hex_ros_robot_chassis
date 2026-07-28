@@ -35,7 +35,7 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='taigong26',
-    maintainer_email='taigong26@gmail.com',
+    maintainer_email='thetaigon@qq.com',
     description='HEXFELLOW robot chassis ROS support package',
     license='Apache-2.0',
     entry_points={
