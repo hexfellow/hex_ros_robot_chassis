@@ -13,7 +13,6 @@ import rospy
 from hex_util_runtime import ns_now
 
 from sensor_msgs.msg import JointState
-from rosgraph_msgs.msg import Clock
 from geometry_msgs.msg import Twist, TransformStamped, Vector3
 from nav_msgs.msg import Odometry
 from tf2_msgs.msg import TFMessage
@@ -63,12 +62,9 @@ class DataInterface(ChassisInterfaceBase):
             "port": rospy.get_param('~robot_port', 8439),
             "frame_id": rospy.get_param('~robot_frame_id', "base_link"),
             "state_buffer_size": rospy.get_param('~state_buffer_size', 200),
-            "sens_ts": rospy.get_param('~sens_ts', False),
+            "sens_ts": rospy.get_param('~sens_ts', True),
             "enable_kcp": rospy.get_param('~enable_kcp', True),
         }
-
-        ### time source — PTP (ns_now) or ROS clock
-        self._use_ros_time = rospy.get_param('~use_ros_time', False)
 
         ### publisher — chs_state
         self.__chs_state_pub = rospy.Publisher(
@@ -92,12 +88,6 @@ class DataInterface(ChassisInterfaceBase):
         self.__tf_pub = rospy.Publisher(
             '/tf',
             TFMessage,
-            queue_size=10,
-        )
-        ### publisher — /clock
-        self.__clock_pub = rospy.Publisher(
-            '/clock',
-            Clock,
             queue_size=10,
         )
 
@@ -143,24 +133,31 @@ class DataInterface(ChassisInterfaceBase):
     ### time source
     ####################
     def now_ns(self) -> int:
-        if self._use_ros_time:
-            return rospy.Time.now().to_nsec()
         return ns_now()
+
+    def now_stamp(self) -> HexDcBaseTime:
+        now = rospy.Time.now()
+        return HexDcBaseTime(secs=now.secs, nsecs=now.nsecs)
 
     ####################
     ### publishers
     ####################
     def pub_chs_state(self, out: HexDcRoboChsStateStamped):
         msg = HexRosRoboChsStateStamped()
-        stamp = rospy.Time(
-            int(out.header.stamp.secs),
-            int(out.header.stamp.nsecs),
+        # ros time stamp
+        now_stamp_dc = self.now_stamp()
+        msg.header.stamp = rospy.Time(
+            int(now_stamp_dc.secs),
+            int(now_stamp_dc.nsecs),
         )
-        msg.header.stamp = stamp
         msg.header.frame_id = out.header.frame_id
 
         jnt = out.chs_state.jnt
-        msg.chs_state.jnt.header.stamp = stamp
+        hardware_stamp = rospy.Time(
+            int(out.header.stamp.secs),
+            int(out.header.stamp.nsecs),
+        )
+        msg.chs_state.jnt.header.stamp = hardware_stamp
         msg.chs_state.jnt.header.frame_id = out.header.frame_id
         msg.chs_state.jnt.name = JOINT_STATE_NAME
         msg.chs_state.jnt.position = \
@@ -171,7 +168,10 @@ class DataInterface(ChassisInterfaceBase):
             np.asarray(jnt.effort, dtype=np.float64).tolist()
 
         odom = out.chs_state.odom
-        msg.chs_state.odom.header.stamp = stamp
+        msg.chs_state.odom.header.stamp = rospy.Time(
+            int(now_stamp_dc.secs),
+            int(now_stamp_dc.nsecs),
+        )
         msg.chs_state.odom.header.frame_id = "odom"
         msg.chs_state.odom.child_frame_id = out.header.frame_id
         msg.chs_state.odom.pose.pose.position.x = odom.pose.position.x
@@ -192,11 +192,11 @@ class DataInterface(ChassisInterfaceBase):
 
     def pub_odom(self, out: HexDcRoboChsStateStamped):
         msg = Odometry()
-        stamp = rospy.Time(
-            int(out.header.stamp.secs),
-            int(out.header.stamp.nsecs),
+        now_stamp_dc = self.now_stamp()
+        msg.header.stamp = rospy.Time(
+            int(now_stamp_dc.secs),
+            int(now_stamp_dc.nsecs),
         )
-        msg.header.stamp = stamp
         msg.header.frame_id = "odom"
         msg.child_frame_id = out.header.frame_id
         msg.pose.pose.position.x = out.chs_state.odom.pose.position.x
@@ -216,9 +216,10 @@ class DataInterface(ChassisInterfaceBase):
 
     def pub_joint_state(self, out: HexDcRoboChsStateStamped):
         msg = JointState()
+        now_stamp_dc = self.now_stamp()
         msg.header.stamp = rospy.Time(
-            int(out.header.stamp.secs),
-            int(out.header.stamp.nsecs),
+            int(now_stamp_dc.secs),
+            int(now_stamp_dc.nsecs),
         )
         msg.header.frame_id = out.header.frame_id
         msg.name = JOINT_STATE_NAME
@@ -233,9 +234,10 @@ class DataInterface(ChassisInterfaceBase):
     def pub_tf(self, out: HexDcRoboChsStateStamped):
         tf_msg = TFMessage()
         transform = TransformStamped()
+        now_stamp_dc = self.now_stamp()
         transform.header.stamp = rospy.Time(
-            int(out.header.stamp.secs),
-            int(out.header.stamp.nsecs),
+            int(now_stamp_dc.secs),
+            int(now_stamp_dc.nsecs),
         )
         transform.header.frame_id = "odom"
         transform.child_frame_id = out.header.frame_id
@@ -248,14 +250,6 @@ class DataInterface(ChassisInterfaceBase):
         transform.transform.rotation.w = out.chs_state.odom.pose.orientation.w
         tf_msg.transforms.append(transform)
         self.__tf_pub.publish(tf_msg)
-
-    def pub_clock(self, stamp_ns: int):
-        msg = Clock()
-        msg.clock = rospy.Time(
-            int(stamp_ns // 1_000_000_000),
-            int(stamp_ns % 1_000_000_000),
-        )
-        self.__clock_pub.publish(msg)
 
     ####################
     ### subscribers
