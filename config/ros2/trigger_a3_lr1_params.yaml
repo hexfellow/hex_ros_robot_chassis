@@ -19,9 +19,6 @@ hex_ros_robot_trigger_a3_lr1:
     # sensor timestamp enable
     sens_ts: true
 
-    # time source: false → PTP (ns_now), true → ROS clock
-    use_ros_time: false
-
     # KCP transport
     enable_kcp: true
 

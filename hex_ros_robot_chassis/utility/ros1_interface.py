@@ -66,9 +66,6 @@ class DataInterface(ChassisInterfaceBase):
             "enable_kcp": rospy.get_param('~enable_kcp', True),
         }
 
-        ### time source — PTP (ns_now) or ROS clock
-        self._use_ros_time = rospy.get_param('~use_ros_time', False)
-
         ### publisher — chs_state
         self.__chs_state_pub = rospy.Publisher(
             'chs_state',
@@ -136,8 +133,6 @@ class DataInterface(ChassisInterfaceBase):
     ### time source
     ####################
     def now_ns(self) -> int:
-        if self._use_ros_time:
-            return rospy.Time.now().to_nsec()
         return ns_now()
 
     def now_stamp(self) -> HexDcBaseTime:
