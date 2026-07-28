@@ -10,6 +10,7 @@ from collections import deque
 from typing import Any, Optional
 from abc import ABC, abstractmethod
 
+from hex_util_msg.dataclass.dataclass_base import HexDcBaseTime
 from hex_util_msg.dataclass.dataclass_robo import (
     HexDcRoboChsCtrlStamped,
     HexDcRoboChsStateStamped,
@@ -50,6 +51,10 @@ class ChassisInterfaceBase(ABC):
     @abstractmethod
     def now_ns(self) -> int:
         raise NotImplementedError("ChassisInterfaceBase.now_ns")
+
+    @abstractmethod
+    def now_stamp(self) -> HexDcBaseTime:
+        raise NotImplementedError("ChassisInterfaceBase.now_stamp")
 
     ####################
     ### logging

@@ -178,20 +178,30 @@ class DataInterface(ChassisInterfaceBase):
             return self.__node.get_clock().now().nanoseconds
         return ns_now()
 
+    def now_stamp(self) -> HexDcBaseTime:
+        now = self.__node.get_clock().now()
+        secs, nsecs = now.seconds_nanoseconds()
+        return HexDcBaseTime(secs=secs, nsecs=nsecs)
+
     ####################
     ### publishers
     ####################
     def pub_chs_state(self, out: HexDcRoboChsStateStamped):
         msg = HexRosRoboChsStateStamped()
-        stamp = Time(
-            sec=int(out.header.stamp.secs),
-            nanosec=int(out.header.stamp.nsecs),
+        # ros time stamp
+        now_stamp_dc = self.now_stamp()
+        msg.header.stamp = Time(
+            sec=int(now_stamp_dc.secs),
+            nanosec=int(now_stamp_dc.nsecs),
         )
-        msg.header.stamp = stamp
         msg.header.frame_id = out.header.frame_id
 
         jnt = out.chs_state.jnt
-        msg.chs_state.jnt.header.stamp = stamp
+        hardware_stamp = Time(
+            sec=int(out.header.stamp.secs),
+            nanosec=int(out.header.stamp.nsecs),
+        )
+        msg.chs_state.jnt.header.stamp = hardware_stamp
         msg.chs_state.jnt.header.frame_id = out.header.frame_id
         msg.chs_state.jnt.name = JOINT_STATE_NAME
         msg.chs_state.jnt.position = \
@@ -202,7 +212,10 @@ class DataInterface(ChassisInterfaceBase):
             np.asarray(jnt.effort, dtype=np.float64).tolist()
 
         odom = out.chs_state.odom
-        msg.chs_state.odom.header.stamp = stamp
+        msg.chs_state.odom.header.stamp = Time(
+            sec=int(now_stamp_dc.secs),
+            nanosec=int(now_stamp_dc.nsecs),
+        )
         msg.chs_state.odom.header.frame_id = "odom"
         msg.chs_state.odom.child_frame_id = out.header.frame_id
         msg.chs_state.odom.pose.pose.position.x = odom.pose.position.x
@@ -223,11 +236,11 @@ class DataInterface(ChassisInterfaceBase):
 
     def pub_odom(self, out: HexDcRoboChsStateStamped):
         msg = Odometry()
-        stamp = Time(
-            sec=int(out.header.stamp.secs),
-            nanosec=int(out.header.stamp.nsecs),
+        now_stamp_dc = self.now_stamp()
+        msg.header.stamp = Time(
+            sec=int(now_stamp_dc.secs),
+            nanosec=int(now_stamp_dc.nsecs),
         )
-        msg.header.stamp = stamp
         msg.header.frame_id = "odom"
         msg.child_frame_id = out.header.frame_id
         msg.pose.pose.position.x = out.chs_state.odom.pose.position.x
@@ -247,9 +260,10 @@ class DataInterface(ChassisInterfaceBase):
 
     def pub_joint_state(self, out: HexDcRoboChsStateStamped):
         msg = JointState()
+        now_stamp_dc = self.now_stamp()
         msg.header.stamp = Time(
-            sec=int(out.header.stamp.secs),
-            nanosec=int(out.header.stamp.nsecs),
+            sec=int(now_stamp_dc.secs),
+            nanosec=int(now_stamp_dc.nsecs),
         )
         msg.header.frame_id = out.header.frame_id
         msg.name = JOINT_STATE_NAME
@@ -264,9 +278,10 @@ class DataInterface(ChassisInterfaceBase):
     def pub_tf(self, out: HexDcRoboChsStateStamped):
         tf_msg = TFMessage()
         transform = TransformStamped()
+        now_stamp_dc = self.now_stamp()
         transform.header.stamp = Time(
-            sec=int(out.header.stamp.secs),
-            nanosec=int(out.header.stamp.nsecs),
+            sec=int(now_stamp_dc.secs),
+            nanosec=int(now_stamp_dc.nsecs),
         )
         transform.header.frame_id = "odom"
         transform.child_frame_id = out.header.frame_id
