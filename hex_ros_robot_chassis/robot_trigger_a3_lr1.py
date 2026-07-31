@@ -8,6 +8,7 @@
 
 import os
 import sys
+from turtle import speed
 from typing import Optional
 
 import numpy as np
@@ -35,6 +36,10 @@ from hex_util_msg.dataclass.dataclass_base import (
     HexDcBaseOdometry,
 )
 from hex_util_runtime import hex_ts_to_ns, ns_now
+
+
+# Trigger A3 LR1 3-wheel joint names
+JOINT_STATE_NAME = ["joint_wheel1", "joint_wheel2", "joint_wheel3"]
 
 
 class RobotTriggerA3Lr1:
@@ -66,6 +71,8 @@ class RobotTriggerA3Lr1:
         ))
         self.__robot.start()
 
+        self.__data_interface.set_joint_names(JOINT_STATE_NAME)
+
         ### derived
         self.__state_decim = max(
             1,
@@ -89,11 +96,16 @@ class RobotTriggerA3Lr1:
             })
 
         elif mode == HexDcRoboChsCtrlMode.MIT:
-            # MIT mode: vel → per-motor speed, jnt.eff → max_current
-            speeds = chs_ctrl.jnt.eff
+
+            speeds = chs_ctrl.jnt.vel
+            max_currents = chs_ctrl.jnt.eff
             
-            eff = chs_ctrl.jnt.eff
-            max_currents = np.asarray(eff[:3]) if len(eff) >= 3 else np.full(3, 1.0)
+            if len(max_currents) >len(JOINT_STATE_NAME)or len(speeds) > len(JOINT_STATE_NAME):
+                
+                self.__data_interface.logw(f"Parameter count exceeds wheel count.")
+                max_currents=np.zeros(len(JOINT_STATE_NAME))
+                speeds=np.zeros(len(JOINT_STATE_NAME))
+            
             self.__robot.set_chs_per_motor_spd_cmd({
                 "speed": speeds,
                 "max_current": max_currents,

@@ -16,13 +16,6 @@ from hex_util_msg.dataclass.dataclass_robo import (
     HexDcRoboChsStateStamped,
 )
 
-JOINT_STATE_NAME = [
-    "joint_wheel1", "joint_wheel2", "joint_wheel3",
-    "joint_wheel4", "joint_wheel5", "joint_wheel6",
-    "joint_wheel7", "joint_wheel8",
-]
-
-
 class ChassisInterfaceBase(ABC):
 
     def __init__(self, name: str = "unknown"):
@@ -34,6 +27,9 @@ class ChassisInterfaceBase(ABC):
 
         ### rx msg queues
         self._chs_ctrl_deque = deque(maxlen=100)
+
+        ### joint state names
+        self._joint_names = []
 
         print(f"#### ChassisInterfaceBase init: {self._name} ####")
 
@@ -92,6 +88,9 @@ class ChassisInterfaceBase(ABC):
     def get_robot_param(self) -> dict:
         return self._robot_param
 
+    def set_joint_names(self, joint_names: list):
+        self._joint_names = joint_names
+    
     ####################
     ### publishers
     ####################

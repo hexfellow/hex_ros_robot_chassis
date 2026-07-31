@@ -45,7 +45,6 @@ from hex_util_msg.dataclass.dataclass_robo import (
 )
 
 from .interface_base import ChassisInterfaceBase
-from .interface_base import JOINT_STATE_NAME
 
 from rclpy.logging import LoggingSeverity
 
@@ -197,7 +196,7 @@ class DataInterface(ChassisInterfaceBase):
         )
         msg.chs_state.jnt.header.stamp = hardware_stamp
         msg.chs_state.jnt.header.frame_id = out.header.frame_id
-        msg.chs_state.jnt.name = JOINT_STATE_NAME
+        msg.chs_state.jnt.name = self._joint_names
         msg.chs_state.jnt.position = \
             np.asarray(jnt.position, dtype=np.float64).tolist()
         msg.chs_state.jnt.velocity = \
@@ -260,7 +259,7 @@ class DataInterface(ChassisInterfaceBase):
             nanosec=int(now_stamp_dc.nsecs),
         )
         msg.header.frame_id = out.header.frame_id
-        msg.name = JOINT_STATE_NAME
+        msg.name = self._joint_names
         msg.position = \
             np.asarray(out.chs_state.jnt.position, dtype=np.float64).tolist()
         msg.velocity = \

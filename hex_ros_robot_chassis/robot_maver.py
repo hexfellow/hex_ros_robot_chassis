@@ -42,6 +42,19 @@ from hex_util_msg.dataclass.dataclass_base import (
 from hex_util_runtime import hex_ts_to_ns, ns_now
 
 
+# Maver 8-motor wheel joint names
+JOINT_STATE_NAME = [
+    "joint_wheel1", 
+    "joint_yaw1", 
+    "joint_wheel2",
+    "joint_yaw2", 
+    "joint_wheel3", 
+    "joint_yaw3",
+    "joint_wheel4", 
+    "joint_yaw4",
+]
+
+
 class RobotMaver:
 
     def __init__(self):
@@ -81,6 +94,8 @@ class RobotMaver:
             self.__robot = HexRobotMaverX4H1(HexRobotMaverX4H1Params(**params))
         self.__robot.start()
 
+        self.__data_interface.set_joint_names(JOINT_STATE_NAME)
+
         ### derived
         self.__state_decim = max(
             1,
@@ -105,8 +120,6 @@ class RobotMaver:
 
         elif mode == HexDcRoboChsCtrlMode.MIT:
             # MIT mode: direct impedance targets for 8 motors
-            #   jnt.pos → jnt_pos, jnt.vel → jnt_vel,
-            #   jnt.eff → mit_tau, jnt.kp → mit_kp, jnt.kd → mit_kd
             jnt = chs_ctrl.jnt
             self.__robot.set_chs_mit_cmd({
                 "jnt_pos": jnt.pos,
