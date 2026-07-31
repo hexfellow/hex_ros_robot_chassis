@@ -94,7 +94,7 @@ hex_ros_robot_chassis/
 | `MIT` | `1` |  力矩模式：下发每个电机的目标转速 + 最大电流 |
 | `NONE` | `0` | 空操作，不执行任何控制 |
 
-> 目前底盘未支持MIT；当您使用MIT模式时，将会向底盘设备下发目标速度(rad/s)+最大限制电流(A)
+> 目前**Trigger A3 lr**未支持MIT；当您使用MIT模式时，将会向****Trigger A3 lr****设备下发目标速度(rad/s)+最大限制电流(A)
 
 ### MIT 模式使用警告
 - 除非你知道什么是 MIT 模式，否则不要使用该模式
@@ -227,4 +227,4 @@ rostopic pub --once /chs_ctrl hex_ros_msgs/HexRosRoboChsCtrlStamped "{header: {s
 rostopic pub --once /chs_ctrl hex_ros_msgs/HexRosRoboChsCtrlStamped "{header: {stamp: 0, frame_id: 'base_link'}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [], vel: [0.0, 0.0, 0.0], eff: [0.0, 0.0, 0.0], kp: [], kd: [], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}"
 ```
 
-> 目前底盘未支持MIT；当您使用MIT模式时，将会向底盘设备下发目标速度(rad/s)+最大限制电流(A)
+> 目前**Trigger A3 lr**未支持MIT；当您使用MIT模式时，将会向****Trigger A3 lr****设备下发目标速度(rad/s)+最大限制电流(A)

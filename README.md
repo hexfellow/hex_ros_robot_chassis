@@ -91,7 +91,7 @@ The chassis supports two control modes, selected via `chs_ctrl.ctrl_mode`:
 | `MIT` | `1` | Torque mode: send target speed + max current per motor |
 | `NONE` | `0` | No operation, no control executed |
 
-> MIT mode is not currently supported by the chassis; when used, the driver will send target speed (rad/s) + max current limit (A) to the chassis device.
+> MIT mode is not currently supported by the **Trigger A3 lr**; when used, the driver will send target speed (rad/s) + max current limit (A) to the **Trigger A3 lr** device.
 
 ### MIT Mode Usage Warning
 - Do not use MIT mode unless you understand what it does
@@ -223,4 +223,4 @@ rostopic pub --once /chs_ctrl hex_ros_msgs/HexRosRoboChsCtrlStamped "{header: {s
 rostopic pub --once /chs_ctrl hex_ros_msgs/HexRosRoboChsCtrlStamped "{header: {stamp: 0, frame_id: 'base_link'}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [], vel: [0.0, 0.0, 0.0], eff: [0.0, 0.0, 0.0], kp: [], kd: [], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}"
 ```
 
-> MIT mode is not currently supported by the chassis; when used, the driver will send target speed (rad/s) + max current limit (A) to the chassis device.
+> MIT mode is not currently supported by the **Trigger A3 lr**; when used, the driver will send target speed (rad/s) + max current limit (A) to the **Trigger A3 lr** device.
