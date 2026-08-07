@@ -1,4 +1,4 @@
-hex_ros_robot_maver:
+/**/hex_ros_robot_maver:
   ros__parameters:
     # main loop rate [hz] — equals robot ctrl_rate
     ctrl_rate: 1000.0
