@@ -1,4 +1,4 @@
-hex_ros_robot_trigger_a3_lr1:
+/**/hex_ros_robot_trigger_a3_lr1:
   ros__parameters:
     # main loop rate [hz] — equals robot ctrl_rate
     ctrl_rate: 1000.0
