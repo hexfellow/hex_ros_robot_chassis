@@ -120,7 +120,7 @@ The chassis supports two control modes, selected via `chs_ctrl.ctrl_mode`:
 
 > MIT mode is not currently supported by the **Trigger A3 lr**; when used, the driver will send target speed (rad/s) + max current limit (A) to the **Trigger A3 lr** device.
 
-> **Maver** current firmware forces `kp=0`; in MIT mode, only the feedforward torque (`eff`) and damping (`kd`) take effect.
+> **Maver** current firmware forces `kp=0` in MIT mode.
 
 ### MIT Mode Usage Warning
 
@@ -330,10 +330,6 @@ ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
 ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
 '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: "base_link"}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], vel: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], eff: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], kd: [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'
 
-# MIT mode — pure feedforward torque (1.0 Nm each on 8 motors, rest 0)
-ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
-'{header: {stamp: {sec: 0, nanosec: 0}, frame_id: "base_link"}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], vel: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], eff: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], kd: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'
-
 # MIT mode — release (all zero, no output torque)
 ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
 '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: "base_link"}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [0, 0, 0, 0, 0, 0, 0, 0], vel: [0, 0, 0, 0, 0, 0, 0, 0], eff: [0, 0, 0, 0, 0, 0, 0, 0], kp: [0, 0, 0, 0, 0, 0, 0, 0], kd: [0, 0, 0, 0, 0, 0, 0, 0], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'
@@ -358,7 +354,6 @@ MIT mode field description:
 |----------------------|---------|------|
 | `jnt.pos[0..7]` | Target position | rad |
 | `jnt.vel[0..7]` | Target velocity | rad/s |
-| `jnt.eff[0..7]` | Feedforward torque | Nm |
 | `jnt.kp[0..7]` | Position stiffness | Nm/rad |
 | `jnt.kd[0..7]` | Damping | Nm/(rad/s) |
 
