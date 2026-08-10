@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 ################################################################
-# Copyright 2024 Dong Zhaorui. All rights reserved.
+# Copyright 2026 Dong Zhaorui. All rights reserved.
 # Author: Dong Zhaorui 847235539@qq.com
-# Date  : 2024-09-05
+# Date  : 2026-08-10
 ################################################################
 
 import os
 import sys
-from turtle import speed
 from typing import Optional
 
 import numpy as np
@@ -17,7 +16,7 @@ scrpit_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(scrpit_path)
 from utility import DataInterface
 
-from hex_driver_robot import HexRobotTriggerA3Lr1, HexRobotTriggerA3Lr1Params
+from hex_driver_robot import HexRobotTriggerA3H1, HexRobotTriggerA3H1Params
 
 from hex_util_msg.dataclass.dataclass_robo import (
     HexDcRoboChsCtrlMode,
@@ -38,15 +37,18 @@ from hex_util_msg.dataclass.dataclass_base import (
 from hex_util_runtime import hex_ts_to_ns, ns_now
 
 
-# Trigger A3 LR1 3-wheel joint names
+# Trigger A3 H1 3-motor joint names
 JOINT_STATE_NAME = ["joint_1", "joint_2", "joint_3"]
 
+# MOTOR_REORDER_IDX = np.array([0, 1, 2])
 
-class RobotTriggerA3Lr1:
+# JOINT_STATE_NAME = [JOINT_STATE_NAME[i] for i in MOTOR_REORDER_IDX]
+
+class RobotTriggerA3H1:
 
     def __init__(self):
         ### utility
-        self.__data_interface = DataInterface("hex_ros_robot_trigger_a3_lr1")
+        self.__data_interface = DataInterface("hex_ros_robot_trigger_a3_h1")
 
         ### parameters
         rate_param = self.__data_interface.get_rate_param()
@@ -61,7 +63,7 @@ class RobotTriggerA3Lr1:
         self.__data_interface.logi(f"enable_kcp: {robot_param['enable_kcp']}")
 
         ### robot driver
-        self.__robot = HexRobotTriggerA3Lr1(HexRobotTriggerA3Lr1Params(
+        self.__robot = HexRobotTriggerA3H1(HexRobotTriggerA3H1Params(
             host=robot_param["host"],
             port=robot_param["port"],
             ctrl_rate=rate_param["ros"],
@@ -72,6 +74,7 @@ class RobotTriggerA3Lr1:
         self.__robot.start()
 
         self.__data_interface.set_joint_names(JOINT_STATE_NAME)
+        self.__robot.clear_odom_bias()
 
         ### derived
         self.__state_decim = max(
@@ -96,19 +99,19 @@ class RobotTriggerA3Lr1:
             })
 
         elif mode == HexDcRoboChsCtrlMode.MIT:
-
-            speeds = chs_ctrl.jnt.vel
-            max_currents = chs_ctrl.jnt.eff
-            
-            if len(max_currents) >len(JOINT_STATE_NAME)or len(speeds) > len(JOINT_STATE_NAME):
-                
-                self.__data_interface.logw(f"Parameter count exceeds wheel count.")
-                max_currents=np.zeros(len(JOINT_STATE_NAME))
-                speeds=np.zeros(len(JOINT_STATE_NAME))
-            
-            self.__robot.set_chs_per_motor_spd_cmd({
-                "speed": speeds,
-                "max_current": max_currents,
+            # MIT mode: direct impedance targets for 3 motors
+            jnt = chs_ctrl.jnt
+            self.__robot.set_chs_mit_cmd({
+                # "jnt_pos": jnt.pos[MOTOR_REORDER_IDX].copy(),
+                # "jnt_vel": jnt.vel[MOTOR_REORDER_IDX].copy(),
+                # "mit_tau": jnt.eff[MOTOR_REORDER_IDX].copy(),
+                # "mit_kp": jnt.kp[MOTOR_REORDER_IDX].copy(),
+                # "mit_kd": jnt.kd[MOTOR_REORDER_IDX].copy(),
+                "jnt_pos": jnt.pos,
+                "jnt_vel": jnt.vel,
+                "mit_tau": jnt.eff,
+                "mit_kp": jnt.kp,
+                "mit_kd": jnt.kd,
             })
 
         # NONE: no-op
@@ -181,7 +184,7 @@ class RobotTriggerA3Lr1:
             if ctrl is not None:
                 self.__apply_chs_ctrl(ctrl)
 
-            # 3. publish robot state at the requested rate
+            # 2. publish robot state at the requested rate
             state_count += 1
             if state_count >= self.__state_decim:
                 state_count = 0
@@ -207,13 +210,13 @@ class RobotTriggerA3Lr1:
 
 
 def main():
-    robot_trigger_a3_lr1 = RobotTriggerA3Lr1()
+    robot_trigger_a3_h1 = RobotTriggerA3H1()
     try:
-        robot_trigger_a3_lr1.run()
+        robot_trigger_a3_h1.run()
     except KeyboardInterrupt:
         pass
     finally:
-        robot_trigger_a3_lr1.shutdown()
+        robot_trigger_a3_h1.shutdown()
 
 
 if __name__ == '__main__':
