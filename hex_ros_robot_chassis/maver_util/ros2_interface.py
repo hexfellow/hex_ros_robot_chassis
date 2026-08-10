@@ -75,6 +75,7 @@ class DataInterface(ChassisInterfaceBase):
         self.__node.declare_parameter('state_buffer_size', 200)
         self.__node.declare_parameter('sens_ts', True)
         self.__node.declare_parameter('enable_kcp', True)
+        self.__node.declare_parameter('robot_type', 30)
         self._robot_param = {
             "host": self.__node.get_parameter('robot_host').value,
             "port": self.__node.get_parameter('robot_port').value,
@@ -82,6 +83,7 @@ class DataInterface(ChassisInterfaceBase):
             "state_buffer_size": self.__node.get_parameter('state_buffer_size').value,
             "sens_ts": self.__node.get_parameter('sens_ts').value,
             "enable_kcp": self.__node.get_parameter('enable_kcp').value,
+            "robot_type": int(self.__node.get_parameter('robot_type').value),
         }
 
         ### publisher — chs_state

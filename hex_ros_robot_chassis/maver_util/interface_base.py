@@ -28,7 +28,7 @@ class ChassisInterfaceBase(ABC):
         ### rx msg queues
         self._chs_ctrl_deque = deque(maxlen=100)
 
-        ### joint state names 
+        ### joint state names
         self._joint_names = []
 
         print(f"#### ChassisInterfaceBase init: {self._name} ####")
@@ -90,7 +90,7 @@ class ChassisInterfaceBase(ABC):
 
     def set_joint_names(self, joint_names: list):
         self._joint_names = joint_names
-
+    
     ####################
     ### publishers
     ####################

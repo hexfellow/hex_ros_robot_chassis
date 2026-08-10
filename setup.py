@@ -21,7 +21,7 @@ def get_files(tar: str, src: str):
 
 setup(
     name=package_name,
-    version='0.1.0',
+    version='0.2.0',
     packages=find_packages(),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -35,12 +35,13 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='taigong26',
-    maintainer_email='taigong26@gmail.com',
+    maintainer_email='thetaigon@qq.com',
     description='HEXFELLOW robot chassis ROS support package',
     license='Apache-2.0',
     entry_points={
         'console_scripts': [
             'hex_ros_robot_trigger_a3_lr1 = hex_ros_robot_chassis.robot_trigger_a3_lr1:main',
+            'hex_ros_robot_maver = hex_ros_robot_chassis.robot_maver:main',
         ],
     },
 )

@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 ################################################################
-# Copyright 2024 Dong Zhaorui. All rights reserved.
+# Copyright 2026 Dong Zhaorui. All rights reserved.
 # Author: Dong Zhaorui 847235539@qq.com
-# Date  : 2024-09-05
+# Date  : 2026-07-31
 ################################################################
 
 import os
 import sys
-from turtle import speed
 from typing import Optional
 
 import numpy as np
 
 scrpit_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(scrpit_path)
-from utility import DataInterface
+from maver_util import DataInterface
 
-from hex_driver_robot import HexRobotTriggerA3Lr1, HexRobotTriggerA3Lr1Params
+from hex_driver_robot import (
+    HexRobotMaverX4H1,
+    HexRobotMaverX4H1Params,
+    HexRobotMaverL4H1,
+    HexRobotMaverL4H1Params,
+)
 
 from hex_util_msg.dataclass.dataclass_robo import (
     HexDcRoboChsCtrlMode,
@@ -38,15 +42,19 @@ from hex_util_msg.dataclass.dataclass_base import (
 from hex_util_runtime import hex_ts_to_ns, ns_now
 
 
-# Trigger A3 LR1 3-wheel joint names
-JOINT_STATE_NAME = ["joint_wheel1", "joint_wheel2", "joint_wheel3"]
+# Maver 8-motor wheel joint names
+JOINT_STATE_NAME = [
+    "joint_yaw1", "joint_wheel1", "joint_yaw2", "joint_wheel2",
+    "joint_yaw3", "joint_wheel3", "joint_yaw4", "joint_wheel4",
+]
+MOTOR_REORDER_IDX = np.array([1, 0, 3, 2, 5, 4, 7, 6])
 
 
-class RobotTriggerA3Lr1:
+class RobotMaver:
 
     def __init__(self):
         ### utility
-        self.__data_interface = DataInterface("hex_ros_robot_trigger_a3_lr1")
+        self.__data_interface = DataInterface("hex_ros_robot_maver")
 
         ### parameters
         rate_param = self.__data_interface.get_rate_param()
@@ -59,16 +67,26 @@ class RobotTriggerA3Lr1:
         self.__data_interface.logi(f"state_buffer_size: {robot_param['state_buffer_size']}")
         self.__data_interface.logi(f"sens_ts: {robot_param['sens_ts']}")
         self.__data_interface.logi(f"enable_kcp: {robot_param['enable_kcp']}")
+        self.__data_interface.logi(f"robot_type: {robot_param['robot_type']}")
 
-        ### robot driver
-        self.__robot = HexRobotTriggerA3Lr1(HexRobotTriggerA3Lr1Params(
-            host=robot_param["host"],
-            port=robot_param["port"],
-            ctrl_rate=rate_param["ros"],
-            state_buffer_size=robot_param["state_buffer_size"],
-            sens_ts=robot_param["sens_ts"],
-            enable_kcp=robot_param["enable_kcp"],
-        ))
+        ### robot driver — select by robot_type (30=X4H1, 31=L4H1)
+        robot_type = robot_param["robot_type"]
+        params = {
+            "host": robot_param["host"],
+            "port": robot_param["port"],
+            "ctrl_rate": rate_param["ros"],
+            "state_buffer_size": robot_param["state_buffer_size"],
+            "sens_ts": robot_param["sens_ts"],
+            "enable_kcp": robot_param["enable_kcp"],
+        }
+        if robot_type == 30:
+            self.__robot = HexRobotMaverX4H1(HexRobotMaverX4H1Params(**params))
+        elif robot_type == 31:
+            self.__robot = HexRobotMaverL4H1(HexRobotMaverL4H1Params(**params))
+        else:
+            self.__data_interface.loge(
+                f"Unknown robot_type: {robot_type}, fallback to X4H1 (30)")
+            self.__robot = HexRobotMaverX4H1(HexRobotMaverX4H1Params(**params))
         self.__robot.start()
 
         self.__data_interface.set_joint_names(JOINT_STATE_NAME)
@@ -96,19 +114,14 @@ class RobotTriggerA3Lr1:
             })
 
         elif mode == HexDcRoboChsCtrlMode.MIT:
-
-            speeds = chs_ctrl.jnt.vel
-            max_currents = chs_ctrl.jnt.eff
-            
-            if len(max_currents) >len(JOINT_STATE_NAME)or len(speeds) > len(JOINT_STATE_NAME):
-                
-                self.__data_interface.logw(f"Parameter count exceeds wheel count.")
-                max_currents=np.zeros(len(JOINT_STATE_NAME))
-                speeds=np.zeros(len(JOINT_STATE_NAME))
-            
-            self.__robot.set_chs_per_motor_spd_cmd({
-                "speed": speeds,
-                "max_current": max_currents,
+            # MIT mode: direct impedance targets for 8 motors
+            jnt = chs_ctrl.jnt
+            self.__robot.set_chs_mit_cmd({
+                "jnt_pos": jnt.pos,
+                "jnt_vel": jnt.vel,
+                "mit_tau": jnt.eff,
+                "mit_kp": jnt.kp,
+                "mit_kd": jnt.kd,
             })
 
         # NONE: no-op
@@ -173,21 +186,38 @@ class RobotTriggerA3Lr1:
             ),
         )
 
+    def __ctrl_joint_order_conversion(self, ctrl: HexDcRoboChsCtrlStamped):
+        if ctrl.chs_ctrl.ctrl_mode == HexDcRoboChsCtrlMode.MIT:
+            jnt = ctrl.chs_ctrl.jnt
+            jnt.pos = jnt.pos[MOTOR_REORDER_IDX]
+            jnt.vel = jnt.vel[MOTOR_REORDER_IDX]
+            jnt.eff = jnt.eff[MOTOR_REORDER_IDX]
+            jnt.kp = jnt.kp[MOTOR_REORDER_IDX]
+            jnt.kd = jnt.kd[MOTOR_REORDER_IDX]
+    
+    def __states_joint_order_conversion(self, chs_state: HexDcRoboChsStateStamped):
+        jnt = chs_state.chs_state.jnt
+        jnt.position = jnt.position[MOTOR_REORDER_IDX]
+        jnt.velocity = jnt.velocity[MOTOR_REORDER_IDX]
+        jnt.effort = jnt.effort[MOTOR_REORDER_IDX]
+    
     def run(self):
         state_count = 0
         while self.__data_interface.ok() and self.__robot.is_working():
             # 1. drain to the latest control frame
             ctrl = self.__data_interface.get_chs_ctrl(latest=True)
             if ctrl is not None:
+                self.__ctrl_joint_order_conversion(ctrl)
                 self.__apply_chs_ctrl(ctrl)
 
-            # 3. publish robot state at the requested rate
+            # 2. publish robot state at the requested rate
             state_count += 1
             if state_count >= self.__state_decim:
                 state_count = 0
 
                 chs_state = self.__build_chs_state()
                 if chs_state is not None:
+                    self.__states_joint_order_conversion(chs_state)
                     self.__data_interface.pub_chs_state(chs_state)
                     self.__data_interface.pub_odom(chs_state)
                     self.__data_interface.pub_joint_state(chs_state)
@@ -207,13 +237,13 @@ class RobotTriggerA3Lr1:
 
 
 def main():
-    robot_trigger_a3_lr1 = RobotTriggerA3Lr1()
+    robot_maver = RobotMaver()
     try:
-        robot_trigger_a3_lr1.run()
+        robot_maver.run()
     except KeyboardInterrupt:
         pass
     finally:
-        robot_trigger_a3_lr1.shutdown()
+        robot_maver.shutdown()
 
 
 if __name__ == '__main__':

@@ -1,10 +1,10 @@
-/**/hex_ros_robot_trigger_a3_lr1:
+/**/hex_ros_robot_maver:
   ros__parameters:
     # main loop rate [hz] — equals robot ctrl_rate
     ctrl_rate: 1000.0
 
     # robot state publish rate [hz]
-    rate_state: 500.0
+    rate_state: 1000.0
 
     # robot connection
     robot_host: "192.168.1.100"
@@ -21,4 +21,7 @@
 
     # KCP transport
     enable_kcp: true
+
+    # robot type: 30 = X4H1, 31 = L4H1
+    robot_type: 30
 
