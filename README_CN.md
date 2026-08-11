@@ -333,10 +333,6 @@ ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
 ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
 '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: "base_link"}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], vel: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], eff: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], kd: [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'
 
-# MIT 模式 — 纯力矩前馈（8 个电机各 1.0 Nm，其余为 0）
-ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
-'{header: {stamp: {sec: 0, nanosec: 0}, frame_id: "base_link"}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], vel: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], eff: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], kd: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'
-
 # MIT 模式 — 松手（全零，无输出力矩）
 ros2 topic pub --once /chs_ctrl hex_ros_msgs/msg/HexRosRoboChsCtrlStamped \
 '{header: {stamp: {sec: 0, nanosec: 0}, frame_id: "base_link"}, chs_ctrl: {ctrl_mode: 1, jnt: {pos: [0, 0, 0, 0, 0, 0, 0, 0], vel: [0, 0, 0, 0, 0, 0, 0, 0], eff: [0, 0, 0, 0, 0, 0, 0, 0], kp: [0, 0, 0, 0, 0, 0, 0, 0], kd: [0, 0, 0, 0, 0, 0, 0, 0], lim_vel: [], lim_acc: []}, vel: {linear: {x: 0.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}}}'
