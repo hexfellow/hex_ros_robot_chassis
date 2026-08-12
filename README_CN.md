@@ -18,8 +18,8 @@
 这是 **HEXFELLOW** 底盘的 **ROS 驱动包**。
 
 - **Trigger A3 LR1** 是一款三轮全向底盘，配备三个全向轮，实现平面内三自由度运动（前后、左右、旋转）。
-- **Trigger A3 H1** 是与 **Trigger A3 LR1** 同底盘的 3 电机变体，区别在于电机不同：H1 支持真 **MIT 阻抗控制**（通过 `set_chs_mit_cmd` 下发位置/速度/力矩/刚度/阻尼），而 LR1 的 `ctrl_mode=1` 语义是"目标速度 + 最大限制电流"。
-- **Maver X4** 是一款四轮转向底盘，配备 8 个电机（4 个转向关节 `joint_yaw1` ~ `joint_yaw4` + 4 个驱动关节 `joint_wheel1` ~ `joint_wheel4`），支持两种硬件变体：**X4H1**（`robot_type=30`）与 **L4H1**（`robot_type=31`）。
+- **Trigger A3 H1** 是与 **Trigger A3 LR1** 同底盘的 3 电机变体，区别在于电机不同：H1 支持真 **MIT 阻抗控制**，而 LR1 的 `MIT` 语义是"目标速度 + 最大限制电流"。
+- **Maver** 是一款四轮转向底盘，配备 8 个电机（4 个转向关节 `joint_yaw1` ~ `joint_yaw4` + 4 个驱动关节 `joint_wheel1` ~ `joint_wheel4`），支持两种硬件变体：**X4H1**（`robot_type=30`）与 **L4H1**（`robot_type=31`）。
 
 > A3 底盘（LR1 / H1）三个驱动关节统一命名为 `joint_1` ~ `joint_3`，与 [hex_ros_urdf_trigger_a](https://github.com/hexfellow/hex_ros_urdf_trigger_a) 的 URDF 及 [hex_ros_sim_trigger_a](https://github.com/hexfellow/hex_ros_sim_trigger_a) 仿真一致。
 
@@ -39,12 +39,12 @@ hex_ros_robot_chassis/
 │   │   ├── trigger_a3_lr1_params.yaml   #   A3 LR1 ROS 1 参数
 │   │   ├── trigger_a3_h1_params.yaml    #   A3 H1 ROS 1 参数
 │   │   ├── maver_params.yaml            #   Maver ROS 1 参数
-│   │   └── display_maver_x4.rviz        #   Maver X4 ROS 1 rviz 配置
+│   │   └── display_maver_x4.rviz        #   Maver ROS 1 rviz 配置
 │   └── ros2/
 │       ├── trigger_a3_lr1_params.yaml   #   A3 LR1 ROS 2 参数
 │       ├── trigger_a3_h1_params.yaml    #   A3 H1 ROS 2 参数
 │       ├── maver_params.yaml            #   Maver ROS 2 参数
-│       └── display_maver_x4.rviz        #   Maver X4 ROS 2 rviz 配置
+│       └── display_maver_x4.rviz        #   Maver ROS 2 rviz 配置
 ├── launch/                              # 启动文件
 │   ├── ros1/
 │   │   ├── trigger_a3_lr1.launch        #   A3 LR1 ROS 1 启动
@@ -119,10 +119,10 @@ hex_ros_robot_chassis/
 | 订阅 | `chs_ctrl` | `hex_ros_msgs/(msg/)HexRosRoboChsCtrlStamped` | 底盘控制指令（VEL / MIT 模式） |
 | 发布 | `chs_state` | `hex_ros_msgs/(msg/)HexRosRoboChsStateStamped` | 底盘状态反馈（8 个电机的位置、速度、力矩） |
 | 发布 | `odom` | `nav_msgs/(msg/)Odometry` | 里程计（位置 x, y, yaw + 速度 vx, vy, omega） |
-| 发布 | `joint_states` | `sensor_msgs/(msg/)JointState` | 8 个关节状态（`joint_yaw1` ~ `joint_wheel4`） |
+| 发布 | `joint_states` | `sensor_msgs/(msg/)JointState` | 8 个关节状态（`joint_wheel1`, `joint_yaw1`, ..., `joint_wheel4`, `joint_yaw4`） |
 | 发布 | `/tf` | `tf2_msgs/(msg/)TFMessage` | odom → base_link 坐标系变换 |
 
-> **关节顺序**：Maver X4 的 8 个关节（数组索引 0~7）按 `joint_yaw1, joint_wheel1, joint_yaw2, joint_wheel2, joint_yaw3, joint_wheel3, joint_yaw4, joint_wheel4` 排列；其中索引 0, 2, 4, 6 为转向（yaw）关节，索引 1, 3, 5, 7 为驱动（wheel）关节。`chs_ctrl` 的 `jnt` 数组与 `joint_states` 均须遵守该顺序。
+> **关节顺序**：Maver 的 8 个关节（数组索引 0~7）按 `joint_wheel1, joint_yaw1, joint_wheel2, joint_yaw2, joint_wheel3, joint_yaw3, joint_wheel4, joint_yaw4` 排列；其中索引 0, 2, 4, 6 为驱动（wheel）关节，索引 1, 3, 5, 7 为转向（yaw）关节。`chs_ctrl` 的 `jnt` 数组与 `joint_states` 均须遵守该顺序。
 
 > 消息类型定义见 [hex_ros_msgs](https://github.com/hexfellow/hex_ros_msgs)
 
@@ -143,7 +143,7 @@ hex_ros_robot_chassis/
 
 > **Trigger A3 LR1**：MIT 模式下发**目标速度 (rad/s) + 最大限制电流 (A)**，映射到 `set_chs_per_motor_spd_cmd`，并非真阻抗控制。
 
-> **Trigger A3 H1**：MIT 模式为**真阻抗控制**（与 Maver 相同），通过 `set_chs_mit_cmd` 下发位置/速度/刚度/阻尼；当前固件强制 `kp=0`。
+> **Trigger A3 H1**：MIT 模式为**真阻抗控制**，通过 `set_chs_mit_cmd` 下发位置/速度/刚度/阻尼；当前固件强制 `kp=0`。
 
 > **Maver** 当前固件强制 `kp=0`。
 
@@ -186,7 +186,7 @@ hex_ros_robot_chassis/
 
 > A3 H1 与 LR1 参数相同（无 `robot_type`，机型固定为 H1）。
 
-### Maver X4
+### Maver 
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
@@ -228,7 +228,7 @@ git clone https://github.com/hexfellow/hex_ros_robot_chassis.git
 git clone https://github.com/hexfellow/hex_ros_urdf_trigger_a.git
 ```
 
-> Maver X4 的 rviz 可视化（launch `rviz:=true`）需要额外的 URDF 包：
+> Maver 的 rviz 可视化（launch `rviz:=true`）需要额外的 URDF 包：
 
 ```shell
 git clone https://github.com/hexfellow/hex_ros_urdf_maver_x4.git
@@ -250,6 +250,9 @@ cd <your_ws>/src
 ```shell
 git clone https://github.com/hexfellow/hex_ros_msgs.git
 git clone https://github.com/hexfellow/hex_ros_robot_chassis.git
+# 若需要 rviz 可视化，还需克隆对应 URDF 包：
+git clone https://github.com/hexfellow/hex_ros_urdf_trigger_a.git    # A3 底盘（LR1 / H1）
+git clone https://github.com/hexfellow/hex_ros_urdf_maver_x4.git     # Maver X4
 ```
 
 ### 3. 编译包
@@ -284,7 +287,7 @@ roslaunch hex_ros_robot_chassis trigger_a3_lr1.launch \
 roslaunch hex_ros_robot_chassis trigger_a3_h1.launch \
     robot_host:=192.168.1.100 robot_port:=8439
 
-# ROS 1 — Maver X4
+# ROS 1 — Maver
 roslaunch hex_ros_robot_chassis maver.launch \
     robot_host:=192.168.1.100 robot_port:=8439
 ```
@@ -299,13 +302,12 @@ ros2 launch hex_ros_robot_chassis trigger_a3_lr1.launch.py \
 ros2 launch hex_ros_robot_chassis trigger_a3_h1.launch.py \
     robot_host:=192.168.1.100 robot_port:=8439
 
-# ROS 2 — Maver X4
+# ROS 2 — Maver
 ros2 launch hex_ros_robot_chassis maver.launch.py \
     robot_host:=192.168.1.100 robot_port:=8439
 
 ```
 
-> `trigger_a3_h1.launch(.py)`（A3 H1）同时被 `hex_ros_demo_chassis_impedance` 的 `real_impedance_trigger_a` launch include。
 
 `trigger_a3_h1.launch.py` / `maver.launch.py` 可选参数：
 - `rviz:=true/false`：是否启动 rviz 可视化（默认 `true`，A3 需要 `hex_ros_urdf_trigger_a`，Maver 需要 `hex_ros_urdf_maver_x4`）
@@ -402,9 +404,9 @@ rostopic pub --once /chs_ctrl hex_ros_msgs/HexRosRoboChsCtrlStamped "{header: {s
 
 > A3 H1 的 MIT 为真阻抗控制（`set_chs_mit_cmd`），字段与 Maver 一致：`pos` 目标位置、`vel` 目标速度、`kp` 位置刚度、`kd` 阻尼；当前固件强制 `kp=0`。
 
-#### Maver X4 快速使用
+#### Maver 快速使用
 
-通过 `ros2 topic pub` 可快速向底盘发送控制指令（8 个电机按 `joint_yaw1` ~ `joint_wheel4` 顺序排列）：
+通过 `ros2 topic pub` 可快速向底盘发送控制指令（8 个电机按 `joint_wheel1, joint_yaw1, ..., joint_wheel4, joint_yaw4` 顺序排列）：
 
 ```bash
 # VEL 模式 — 前进 0.3 m/s
@@ -448,4 +450,4 @@ MIT 模式字段说明：
 
 > `--once` 发布一次只在单个控制周期内生效；如需持续运动请使用 `--rate` 定期发布。
 > `robot_type` 机型选择见上文「4. 使用包」（30=X4H1 / 31=L4H1）。
-> 8 个电机的数组顺序为 `joint_yaw1, joint_wheel1, joint_yaw2, joint_wheel2, joint_yaw3, joint_wheel3, joint_yaw4, joint_wheel4`（索引 0, 2, 4, 6 = yaw 转向，1, 3, 5, 7 = wheel 驱动）。
+> 8 个电机的数组顺序为 `joint_wheel1, joint_yaw1, joint_wheel2, joint_yaw2, joint_wheel3, joint_yaw3, joint_wheel4, joint_yaw4`（索引 0, 2, 4, 6 = wheel 驱动，1, 3, 5, 7 = yaw 转向）。

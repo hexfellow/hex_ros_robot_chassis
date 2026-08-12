@@ -72,6 +72,7 @@ class RobotTriggerA3Lr1:
         self.__robot.start()
 
         self.__data_interface.set_joint_names(JOINT_STATE_NAME)
+        self.__robot.clear_odom_bias()
 
         ### derived
         self.__state_decim = max(
