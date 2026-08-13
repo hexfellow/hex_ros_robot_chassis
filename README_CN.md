@@ -250,7 +250,6 @@ cd <your_ws>/src
 ```shell
 git clone https://github.com/hexfellow/hex_ros_msgs.git
 git clone https://github.com/hexfellow/hex_ros_robot_chassis.git
-# 若需要 rviz 可视化，还需克隆对应 URDF 包：
 git clone https://github.com/hexfellow/hex_ros_urdf_trigger_a.git    # A3 底盘（LR1 / H1）
 git clone https://github.com/hexfellow/hex_ros_urdf_maver_x4.git     # Maver X4
 ```
