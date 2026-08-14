@@ -19,7 +19,7 @@ This is the **ROS Driver Package** for **HEXFELLOW** chassis.
 
 - **Trigger A3 LR1** — a three-wheel omnidirectional chassis with three omni wheels, enabling 3-DoF planar motion (forward/backward, left/right, rotation).
 - **Trigger A3 H1** — a 3-motor variant sharing the same chassis as **Trigger A3 LR1**; the difference is the motors: H1 supports true **MIT impedance control**, whereas LR1's `MIT` semantics is "target speed + max current limit".
-- **Maver X4** — a four-wheel steering chassis with 8 motors (4 steering joints `joint_yaw1` ~ `joint_yaw4` + 4 drive joints `joint_wheel1` ~ `joint_wheel4`), supporting two hardware variants: **X4H1** (`robot_type=30`) and **L4H1** (`robot_type=31`).
+- **Maver** — a four-wheel steering chassis with 8 motors (4 steering joints `joint_yaw1` ~ `joint_yaw4` + 4 drive joints `joint_wheel1` ~ `joint_wheel4`), supporting two hardware variants: **X4H1** (`robot_type=30`) and **L4H1** (`robot_type=31`).
 
 > The three drive joints of the A3 chassis (LR1 / H1) are uniformly named `joint_1` ~ `joint_3`, consistent with the URDF of [hex_ros_urdf_trigger_a](https://github.com/hexfellow/hex_ros_urdf_trigger_a) and the [hex_ros_sim_trigger_a](https://github.com/hexfellow/hex_ros_sim_trigger_a) simulation.
 
@@ -110,7 +110,7 @@ hex_ros_robot_chassis/
 
 > A3 LR1 and A3 H1 publish the same topics and joint names (`joint_1` ~ `joint_3`); they differ only in the drive motors and control semantics (see "4. Control Modes").
 
-### Maver X4
+### Maver
 
 | Direction | Topic | Type | Description |
 |-----------|-------|------|-------------|
@@ -183,7 +183,7 @@ The chassis supports two control modes, selected via `chs_ctrl.ctrl_mode`:
 
 > A3 H1 has the same parameters as LR1 (no `robot_type`; the model is fixed to H1).
 
-### Maver X4
+### Maver
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
@@ -283,7 +283,7 @@ roslaunch hex_ros_robot_chassis trigger_a3_lr1.launch \
 roslaunch hex_ros_robot_chassis trigger_a3_h1.launch \
     robot_host:=192.168.1.100 robot_port:=8439
 
-# ROS 1 — Maver X4
+# ROS 1 — Maver 
 roslaunch hex_ros_robot_chassis maver.launch \
     robot_host:=192.168.1.100 robot_port:=8439
 ```
@@ -298,7 +298,7 @@ ros2 launch hex_ros_robot_chassis trigger_a3_lr1.launch.py \
 ros2 launch hex_ros_robot_chassis trigger_a3_h1.launch.py \
     robot_host:=192.168.1.100 robot_port:=8439
 
-# ROS 2 — Maver X4
+# ROS 2 — Maver 
 ros2 launch hex_ros_robot_chassis maver.launch.py \
     robot_host:=192.168.1.100 robot_port:=8439
 
@@ -399,7 +399,7 @@ rostopic pub --once /chs_ctrl hex_ros_msgs/HexRosRoboChsCtrlStamped "{header: {s
 
 > A3 H1's MIT is true impedance control (`set_chs_mit_cmd`); the fields match Maver: `pos` target position, `vel` target velocity, `kp` position stiffness, `kd` damping; the current firmware forces `kp=0`.
 
-#### Quick Test with Maver X4
+#### Quick Test with Maver
 
 Use `ros2 topic pub` to quickly send control commands (the 8 motors are ordered `joint_wheel1, joint_yaw1, ..., joint_wheel4, joint_yaw4`):
 
