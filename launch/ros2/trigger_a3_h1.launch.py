@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 ################################################################
-# Copyright 2024 Dong Zhaorui. All rights reserved.
+# Copyright 2026 Dong Zhaorui. All rights reserved.
 # Author: Dong Zhaorui 847235539@qq.com
-# Date  : 2024-09-05
+# Date  : 2026-08-10
 ################################################################
 
 from launch import LaunchDescription
@@ -21,6 +21,7 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     package_name = "hex_ros_robot_chassis"
     urdf_pkg_path = FindPackageShare("hex_ros_urdf_trigger_a")
+    chassis_pkg_path = FindPackageShare("hex_ros_robot_chassis")
 
     # args
     robot_host_arg = DeclareLaunchArgument(
@@ -31,23 +32,23 @@ def generate_launch_description():
         name='robot_port',
         default_value='8439',
         description='Robot controller WebSocket port')
-    
+
+    rviz_arg = DeclareLaunchArgument(name='rviz',
+        default_value='true',
+        choices=['true', 'false'],
+        description='Flag to turn on rviz')
     use_sim_time_arg = DeclareLaunchArgument(
         name='use_sim_time',
         default_value='false',
         choices=['true', 'false'],
         description='Flag to use simulation time (/clock)')
-    
-    rviz_arg = DeclareLaunchArgument(name='rviz',
-        default_value='true',
-        choices=['true', 'false'],
-        description='Flag to turn on rviz')
+
     # robot node
     robot_param_path = FindPackageShare(package_name).find(
-        package_name) + '/config/ros2/trigger_a3_lr1_params.yaml'
+        package_name) + '/config/ros2/trigger_a3_h1_params.yaml'
     robot_node = Node(package=package_name,
-                      executable='hex_ros_robot_trigger_a3_lr1',
-                      name='hex_ros_robot_trigger_a3_lr1',
+                      executable='hex_ros_robot_trigger_a3_h1',
+                      name='hex_ros_robot_trigger_a3_h1',
                       output="screen",
                       emulate_tty=True,
                       parameters=[
@@ -58,23 +59,21 @@ def generate_launch_description():
                           },
                       ])
 
-
-
     # rviz group
     rviz_config_path = PathJoinSubstitution(
         [urdf_pkg_path, "config", "ros2", "display.rviz"])
     visual_urdf_path = PathJoinSubstitution(
         [urdf_pkg_path, "urdf", "model.urdf"])
     description_content = ParameterValue(Command(['xacro ', visual_urdf_path]),
-                                            value_type=str)
+                                         value_type=str)
     rviz_group = GroupAction(
         [
             Node(package='robot_state_publisher',
-                    executable='robot_state_publisher',
-                    parameters=[{
-                        'robot_description': description_content,
-                        'use_sim_time': LaunchConfiguration('use_sim_time'),
-                    }]),
+                 executable='robot_state_publisher',
+                 parameters=[{
+                     'robot_description': description_content,
+                     'use_sim_time': LaunchConfiguration('use_sim_time'),
+                 }]),
             Node(
                 name="rviz2",
                 package="rviz2",
@@ -87,13 +86,12 @@ def generate_launch_description():
         ],
         condition=IfCondition(LaunchConfiguration('rviz')),
     )
-    
+
     return LaunchDescription([
         robot_host_arg,
         robot_port_arg,
         rviz_arg,
-        robot_node,
         use_sim_time_arg,
+        robot_node,
         rviz_group,
-        rviz_arg
     ])

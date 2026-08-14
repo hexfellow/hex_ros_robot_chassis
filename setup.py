@@ -41,6 +41,7 @@ setup(
     entry_points={
         'console_scripts': [
             'hex_ros_robot_trigger_a3_lr1 = hex_ros_robot_chassis.robot_trigger_a3_lr1:main',
+            'hex_ros_robot_trigger_a3_h1 = hex_ros_robot_chassis.robot_trigger_a3_h1:main',
             'hex_ros_robot_maver = hex_ros_robot_chassis.robot_maver:main',
         ],
     },

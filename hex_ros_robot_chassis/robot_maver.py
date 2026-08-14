@@ -43,12 +43,11 @@ from hex_util_runtime import hex_ts_to_ns, ns_now
 
 
 # Maver 8-motor wheel joint names
-JOINT_STATE_NAME = [
-    "joint_yaw1", "joint_wheel1", "joint_yaw2", "joint_wheel2",
-    "joint_yaw3", "joint_wheel3", "joint_yaw4", "joint_wheel4",
-]
-MOTOR_REORDER_IDX = np.array([1, 0, 3, 2, 5, 4, 7, 6])
 
+JOINT_STATE_NAME = [
+    "joint_wheel1", "joint_yaw1","joint_wheel2", "joint_yaw2", 
+    "joint_wheel3", "joint_yaw3","joint_wheel4", "joint_yaw4", 
+]
 
 class RobotMaver:
 
@@ -90,7 +89,9 @@ class RobotMaver:
         self.__robot.start()
 
         self.__data_interface.set_joint_names(JOINT_STATE_NAME)
+        self.__robot.clear_odom_bias()
 
+        
         ### derived
         self.__state_decim = max(
             1,
@@ -189,17 +190,17 @@ class RobotMaver:
     def __ctrl_joint_order_conversion(self, ctrl: HexDcRoboChsCtrlStamped):
         if ctrl.chs_ctrl.ctrl_mode == HexDcRoboChsCtrlMode.MIT:
             jnt = ctrl.chs_ctrl.jnt
-            jnt.pos = jnt.pos[MOTOR_REORDER_IDX]
-            jnt.vel = jnt.vel[MOTOR_REORDER_IDX]
-            jnt.eff = jnt.eff[MOTOR_REORDER_IDX]
-            jnt.kp = jnt.kp[MOTOR_REORDER_IDX]
-            jnt.kd = jnt.kd[MOTOR_REORDER_IDX]
+            jnt.pos = jnt.pos
+            jnt.vel = jnt.vel
+            jnt.eff = jnt.eff
+            jnt.kp = jnt.kp
+            jnt.kd = jnt.kd
     
     def __states_joint_order_conversion(self, chs_state: HexDcRoboChsStateStamped):
         jnt = chs_state.chs_state.jnt
-        jnt.position = jnt.position[MOTOR_REORDER_IDX]
-        jnt.velocity = jnt.velocity[MOTOR_REORDER_IDX]
-        jnt.effort = jnt.effort[MOTOR_REORDER_IDX]
+        jnt.position = jnt.position
+        jnt.velocity = jnt.velocity
+        jnt.effort = jnt.effort
     
     def run(self):
         state_count = 0
