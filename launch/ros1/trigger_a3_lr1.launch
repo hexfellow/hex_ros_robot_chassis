@@ -9,6 +9,8 @@
     <!-- overridable arguments -->
     <arg name="robot_host" default="192.168.1.100"/>
     <arg name="robot_port" default="8439"/>
+    <arg name="rviz" default="true"/>
+    <arg name="use_sim_time" default="false"/>
 
     <!-- robot node -->
     <node name="hex_ros_robot_trigger_a3_lr1" pkg="hex_ros_robot_chassis" type="robot_trigger_a3_lr1.py" output="screen" >
@@ -16,4 +18,18 @@
         <param name="robot_host" value="$(arg robot_host)"/>
         <param name="robot_port" value="$(arg robot_port)"/>
     </node>
+
+    <param name="robot_description"
+            command="xacro $(find hex_ros_urdf_trigger_a)/urdf/model.urdf"/>
+    <param name="use_sim_time" value="$(arg use_sim_time)"/>
+
+    <!-- rviz group -->
+    <group if="$(arg rviz)">
+        <!-- publish TF from /joint_states using the full URDF -->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"></node>
+        <!-- launch rviz with preset config -->
+        <node name="rviz" pkg="rviz" type="rviz"
+              args="-d $(find hex_ros_urdf_trigger_a)/config/ros1/display.rviz">
+        </node>
+    </group>
 </launch>
