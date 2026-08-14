@@ -40,10 +40,6 @@ from hex_util_runtime import hex_ts_to_ns, ns_now
 # Trigger A3 H1 3-motor joint names
 JOINT_STATE_NAME = ["joint_1", "joint_2", "joint_3"]
 
-# MOTOR_REORDER_IDX = np.array([0, 1, 2])
-
-# JOINT_STATE_NAME = [JOINT_STATE_NAME[i] for i in MOTOR_REORDER_IDX]
-
 class RobotTriggerA3H1:
 
     def __init__(self):
@@ -102,11 +98,6 @@ class RobotTriggerA3H1:
             # MIT mode: direct impedance targets for 3 motors
             jnt = chs_ctrl.jnt
             self.__robot.set_chs_mit_cmd({
-                # "jnt_pos": jnt.pos[MOTOR_REORDER_IDX].copy(),
-                # "jnt_vel": jnt.vel[MOTOR_REORDER_IDX].copy(),
-                # "mit_tau": jnt.eff[MOTOR_REORDER_IDX].copy(),
-                # "mit_kp": jnt.kp[MOTOR_REORDER_IDX].copy(),
-                # "mit_kd": jnt.kd[MOTOR_REORDER_IDX].copy(),
                 "jnt_pos": jnt.pos,
                 "jnt_vel": jnt.vel,
                 "mit_tau": jnt.eff,

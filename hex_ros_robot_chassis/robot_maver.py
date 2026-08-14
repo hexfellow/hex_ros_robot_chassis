@@ -48,11 +48,6 @@ JOINT_STATE_NAME = [
     "joint_wheel1", "joint_yaw1","joint_wheel2", "joint_yaw2", 
     "joint_wheel3", "joint_yaw3","joint_wheel4", "joint_yaw4", 
 ]
-MOTOR_REORDER_IDX = np.array([0, 1, 2, 3, 4, 5, 6, 7])
-
-JOINT_STATE_NAME = [JOINT_STATE_NAME[i] for i in MOTOR_REORDER_IDX]
-
-
 
 class RobotMaver:
 
@@ -195,17 +190,17 @@ class RobotMaver:
     def __ctrl_joint_order_conversion(self, ctrl: HexDcRoboChsCtrlStamped):
         if ctrl.chs_ctrl.ctrl_mode == HexDcRoboChsCtrlMode.MIT:
             jnt = ctrl.chs_ctrl.jnt
-            jnt.pos = jnt.pos[MOTOR_REORDER_IDX].copy()
-            jnt.vel = jnt.vel[MOTOR_REORDER_IDX].copy()
-            jnt.eff = jnt.eff[MOTOR_REORDER_IDX].copy()
-            jnt.kp = jnt.kp[MOTOR_REORDER_IDX].copy()
-            jnt.kd = jnt.kd[MOTOR_REORDER_IDX].copy()
+            jnt.pos = jnt.pos
+            jnt.vel = jnt.vel
+            jnt.eff = jnt.eff
+            jnt.kp = jnt.kp
+            jnt.kd = jnt.kd
     
     def __states_joint_order_conversion(self, chs_state: HexDcRoboChsStateStamped):
         jnt = chs_state.chs_state.jnt
-        jnt.position = jnt.position[MOTOR_REORDER_IDX].copy()
-        jnt.velocity = jnt.velocity[MOTOR_REORDER_IDX].copy()
-        jnt.effort = jnt.effort[MOTOR_REORDER_IDX].copy()
+        jnt.position = jnt.position
+        jnt.velocity = jnt.velocity
+        jnt.effort = jnt.effort
     
     def run(self):
         state_count = 0
